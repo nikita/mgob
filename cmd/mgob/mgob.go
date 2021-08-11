@@ -95,6 +95,7 @@ func start(c *cli.Context) error {
 	appConfig.LogLevel = c.String("LogLevel")
 	appConfig.JSONLog = c.Bool("JSONLog")
 	appConfig.Port = c.Int("Port")
+	appConfig.Host = c.String("Host")
 	appConfig.ConfigPath = c.String("ConfigPath")
 	appConfig.StoragePath = c.String("StoragePath")
 	appConfig.TmpPath = c.String("TmpPath")
