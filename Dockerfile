@@ -1,41 +1,103 @@
-FROM golang:1.15
+FROM golang:1.16-alpine AS installer
 
 ARG VERSION
 
+ENV AWS_CLI_VERSION=2.2.28
+
+RUN apk add --no-cache \
+    build-base \
+    cmake \
+    make \
+    gcc \
+    git \
+    libc-dev \
+    libffi-dev \
+    openssl-dev \
+    python3 \
+    python3-dev \
+    py3-pip \
+    zlib-dev \
+    krb5-dev && \
+    ln -sf python3 /usr/bin/python && \
+    pip install --no-cache-dir --upgrade pip wheel
+
+
+# Move out of go dir
+WORKDIR /
+
+# Install aws-cli
+RUN git clone --recursive  --depth 1 --branch ${AWS_CLI_VERSION} --single-branch https://github.com/aws/aws-cli.git
+
+WORKDIR /aws-cli
+
+# Follow https://github.com/six8/pyinstaller-alpine to install pyinstaller on alpine
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir pycrypto \
+    && git clone --depth 1 --single-branch --branch v$(grep PyInstaller requirements-build.txt | cut -d'=' -f3) https://github.com/pyinstaller/pyinstaller.git /tmp/pyinstaller \
+    && cd /tmp/pyinstaller/bootloader \
+    && CFLAGS="-Wno-stringop-overflow -Wno-stringop-truncation" python3 ./waf configure --no-lsb all \
+    && pip install .. \
+    && rm -Rf /tmp/pyinstaller \
+    && cd - \
+    && boto_ver=$(grep botocore setup.cfg | cut -d'=' -f3) \
+    && git clone --single-branch --branch v2 https://github.com/boto/botocore /tmp/botocore \
+    && cd /tmp/botocore \
+    && git checkout $(git log --grep $boto_ver --pretty=format:"%h") \
+    && pip install . \
+    && rm -Rf /tmp/botocore  \
+      /usr/local/aws-cli/v2/*/dist/aws_completer \
+      /usr/local/aws-cli/v2/*/dist/awscli/data/ac.index \
+      /usr/local/aws-cli/v2/*/dist/awscli/examples \
+    && cd -
+
+RUN sed -i '/botocore/d' requirements.txt \
+    && scripts/installers/make-exe
+
+RUN unzip dist/awscli-exe.zip && \
+    ./aws/install --bin-dir /aws-cli-bin
+
+# Build mgob
 COPY . /go/src/github.com/stefanprodan/mgob
 
 WORKDIR /go/src/github.com/stefanprodan/mgob
 
 RUN CGO_ENABLED=0 GOOS=linux \
-      go build \
-        -ldflags "-X main.version=$VERSION" \
-        -a -installsuffix cgo \
-        -o mgob github.com/stefanprodan/mgob/cmd/mgob
+  go build \
+  -ldflags "-X main.version=$VERSION" \
+  -a -installsuffix cgo \
+  -o mgob github.com/stefanprodan/mgob/cmd/mgob
 
-FROM alpine:3.12
+WORKDIR /go
+
+# Build mongo-tools
+RUN git clone https://github.com/mongodb/mongo-tools.git && \
+  cd mongo-tools && \
+  ./make build
+
+# ========================================================================================================================
+
+FROM alpine:3.14
 
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
 
-ENV MONGODB_TOOLS_VERSION 4.2.3-r1
-ENV GNUPG_VERSION 2.2.23-r0
-ENV GOOGLE_CLOUD_SDK_VERSION 316.0.0
-ENV AZURE_CLI_VERSION 2.13.0
-ENV AWS_CLI_VERSION 1.18.159
-ENV PATH /root/google-cloud-sdk/bin:$PATH
+# ENV MONGODB_TOOLS_VERSION 100.5.0
+ENV GNUPG_VERSION 2.2.27-r0
+ENV AZURE_CLI_VERSION 2.27.1
+ENV GOOGLE_CLOUD_SDK_VERSION 352.0.0
+ENV PATH /google-cloud-sdk/bin:$PATH
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.name="mgob" \
-      org.label-schema.description="MongoDB backup automation tool" \
-      org.label-schema.url="https://github.com/stefanprodan/mgob" \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/stefanprodan/mgob" \
-      org.label-schema.vendor="stefanprodan.com" \
-      org.label-schema.version=$VERSION \
-      org.label-schema.schema-version="1.0"
+# Install python
+RUN apk add --no-cache python3 py3-pip krb5
 
-RUN apk add --no-cache ca-certificates tzdata mongodb-tools=${MONGODB_TOOLS_VERSION} gnupg=${GNUPG_VERSION}
+# Install azure-cli
+RUN apk add --virtual=build --no-cache gcc make openssl-dev libffi-dev musl-dev linux-headers python3-dev && \
+  pip install --no-cache-dir --upgrade pip wheel && \
+  pip install --no-cache-dir azure-cli==${AZURE_CLI_VERSION} && \
+  apk del --purge build
+
+RUN apk add --no-cache curl tzdata gnupg=${GNUPG_VERSION}
 ADD https://dl.minio.io/client/mc/release/linux-amd64/mc /usr/bin
 RUN chmod u+x /usr/bin/mc
 
@@ -45,38 +107,25 @@ RUN cd /tmp \
   && cp rclone-*-linux-amd64/rclone /usr/bin/ \
   && chmod u+x /usr/bin/rclone
 
+# Install google-cloud-sdk into /google-cloud-sdk
+# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/6dc15d4ca5a664dcffb807a5f6ac85188258bd2d/alpine/Dockerfile
+RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
+  tar xzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
+  rm google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
+  rm -rf google-cloud-sdk/platform && \
+  rm -rf google-cloud-sdk/data && \
+  gcloud config set core/disable_usage_reporting true && \
+  gcloud config set component_manager/disable_update_check true && \
+  gcloud config set metrics/environment github_docker_image && \
+  gcloud --version
+
 WORKDIR /root/
 
-#install gcloud
-# https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/69b7b0031d877600a9146c1111e43bc66b536de7/alpine/Dockerfile
-RUN apk --no-cache add \
-        curl \
-        python3 \
-        py3-pip \
-        bash \
-        libc6-compat \
-        openssh-client \
-        git \
-    && pip3 --no-cache-dir install --upgrade pip && \
-    pip --no-cache-dir install wheel && \
-    pip --no-cache-dir install crcmod && \
-    curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
-    tar xzf google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
-    rm google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz && \
-    ln -s /lib /lib64 && \
-    gcloud config set core/disable_usage_reporting true && \
-    gcloud config set component_manager/disable_update_check true && \
-    gcloud config set metrics/environment github_docker_image && \
-    gcloud --version
+COPY --from=installer /go/src/github.com/stefanprodan/mgob/mgob .
+COPY --from=installer /go/mongo-tools/bin/* /usr/bin
 
-# install azure-cli and aws-cli
-RUN apk --no-cache add --virtual=build gcc libffi-dev musl-dev openssl-dev python3-dev make && \
-  pip --no-cache-dir install cffi && \
-  pip --no-cache-dir --use-feature=2020-resolver install azure-cli==${AZURE_CLI_VERSION} && \
-  pip --no-cache-dir install awscli==${AWS_CLI_VERSION} && \
-  apk del --purge build
-
-COPY --from=0 /go/src/github.com/stefanprodan/mgob/mgob .
+COPY --from=installer /usr/local/aws-cli/ /usr/local/aws-cli/
+COPY --from=installer /aws-cli-bin/ /usr/local/bin/
 
 VOLUME ["/config", "/storage", "/tmp", "/data"]
 

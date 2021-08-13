@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"github.com/stefanprodan/mgob/pkg/api"
 	"github.com/stefanprodan/mgob/pkg/backup"
@@ -18,23 +18,23 @@ import (
 
 var (
 	appConfig = &config.AppConfig{}
-	version   = "v1.3.0-dev"
+	version   = "v1.3.1-dev"
 )
 
 func beforeApp(c *cli.Context) error {
-	level, err := log.ParseLevel(c.GlobalString("LogLevel"))
+	level, err := log.ParseLevel(c.String("LogLevel"))
 	if err != nil {
 		log.Fatalf("unable to determine and set log level: %+v", err)
 	}
 	log.SetLevel(level)
 
-	if c.GlobalBool("JSONLog") {
+	if c.Bool("JSONLog") {
 		// platforms such as Google StackDriver want logs to stdout
 		log.SetOutput(os.Stdout)
 		log.SetFormatter(&log.JSONFormatter{})
 	}
 
-	log.Debug("log level set to ", c.GlobalString("LogLevel"))
+	log.Debug("log level set to ", c.String("LogLevel"))
 	return nil
 }
 
@@ -45,43 +45,52 @@ func main() {
 	app.Usage = "mongodb dockerized backup agent"
 	app.Action = start
 	app.Before = beforeApp
+	app.HideHelp = true
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "ConfigPath,c",
+		&cli.StringFlag{
+			Name:  "ConfigPath",
+			Aliases: []string{"c"},
 			Usage: "plan yml files dir",
 			Value: "/config",
 		},
-		cli.StringFlag{
-			Name:  "StoragePath,s",
+		&cli.StringFlag{
+			Name:  "StoragePath",
+			Aliases: []string{"s"},
 			Usage: "backup storage",
 			Value: "/storage",
 		},
-		cli.StringFlag{
-			Name:  "TmpPath,t",
+		&cli.StringFlag{
+			Name:  "TmpPath",
+			Aliases: []string{"t"},
 			Usage: "temporary backup storage",
 			Value: "/tmp",
 		},
-		cli.StringFlag{
-			Name:  "DataPath,d",
+		&cli.StringFlag{
+			Name:  "DataPath",
+			Aliases: []string{"d"},
 			Usage: "db dir",
 			Value: "/data",
 		},
-		cli.IntFlag{
-			Name:  "Port,p",
+		&cli.IntFlag{
+			Name:  "Port",
+			Aliases: []string{"p"},
 			Usage: "HTTP port to listen on",
 			Value: 8090,
 		},
-		cli.StringFlag{
-			Name:  "Host,h",
+		&cli.StringFlag{
+			Name:  "Host",
+			Aliases: []string{"h"},
 			Usage: "HTTP host to listen on",
 			Value: "",
 		},
-		cli.BoolFlag{
-			Name:  "JSONLog,j",
+		&cli.BoolFlag{
+			Name:  "JSONLog",
+			Aliases: []string{"j"},
 			Usage: "logs in JSON format",
 		},
-		cli.StringFlag{
-			Name:  "LogLevel,l",
+		&cli.StringFlag{
+			Name:  "LogLevel",
+			Aliases: []string{"l"},
 			Usage: "logging threshold level: debug|info|warn|error|fatal|panic",
 			Value: "info",
 		},

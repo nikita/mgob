@@ -2,7 +2,7 @@ sudo: required
 language: go
 
 go:
-  - 1.13.x
+  - 1.16.x
 
 services:
   - docker
@@ -43,9 +43,9 @@ script:
 
 after_success:
   - if [ -z "$DOCKER_USER" ]; then
-      echo "PR build, skipping Docker Hub push";
+    echo "PR build, skipping Docker Hub push";
     else
-      make publish;
+    make publish;
     fi
 
 deploy:
