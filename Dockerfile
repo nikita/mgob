@@ -2,7 +2,7 @@ FROM golang:1.16-alpine AS builder
 
 ARG VERSION
 
-ENV AWS_CLI_VERSION=2.2.28
+ENV AWS_CLI_VERSION 2.2.28
 ENV MONGODB_TOOLS_VERSION 100.5.0
 
 RUN apk add --no-cache \
@@ -15,11 +15,11 @@ RUN apk add --no-cache \
     musl-dev \
     zlib-dev \
     libffi-dev \
-    krb5-dev && \
+    krb5-dev \
     openssl-dev \
     python3 \
     python3-dev \
-    py3-pip \
+    py3-pip && \
     ln -sf python3 /usr/bin/python && \
     pip install --no-cache-dir --upgrade pip wheel pycrypto
 
@@ -40,9 +40,13 @@ RUN git clone --depth 1 --single-branch --branch ${MONGODB_TOOLS_VERSION} https:
 # Move out of go dir
 WORKDIR /
 
-# Install aws-cli (https://github.com/six8/pyinstaller-alpine)
-RUN git clone --recursive --depth 1 --branch ${AWS_CLI_VERSION} --single-branch https://github.com/aws/aws-cli.git \
-    && git clone --depth 1 --single-branch --branch v$(grep PyInstaller requirements-build.txt | cut -d'=' -f3) https://github.com/pyinstaller/pyinstaller.git /tmp/pyinstaller \
+# Build aws-cli
+RUN git clone --recursive --depth 1 --branch ${AWS_CLI_VERSION} --single-branch https://github.com/aws/aws-cli.git
+
+WORKDIR /aws-cli
+
+# Install PyInstaller + botocore (https://github.com/six8/pyinstaller-alpine)
+RUN git clone --depth 1 --single-branch --branch v$(grep PyInstaller requirements-build.txt | cut -d'=' -f3) https://github.com/pyinstaller/pyinstaller.git /tmp/pyinstaller \
     && cd /tmp/pyinstaller/bootloader \
     && CFLAGS="-Wno-stringop-overflow -Wno-stringop-truncation" python3 ./waf configure --no-lsb all \
     && pip install .. \
@@ -53,17 +57,16 @@ RUN git clone --recursive --depth 1 --branch ${AWS_CLI_VERSION} --single-branch 
     && cd /tmp/botocore \
     && git checkout $(git log --grep $boto_ver --pretty=format:"%h") \
     && pip install . \
-    && rm -Rf /tmp/botocore  \
-      /usr/local/aws-cli/v2/*/dist/aws_completer \
-      /usr/local/aws-cli/v2/*/dist/awscli/data/ac.index \
-      /usr/local/aws-cli/v2/*/dist/awscli/examples \
-    && cd -
+    && rm -Rf /tmp/botocore
 
 RUN sed -i '/botocore/d' requirements.txt \
-    && scripts/installers/make-exe
+  && scripts/installers/make-exe
 
 RUN unzip dist/awscli-exe.zip && \
-    ./aws/install --bin-dir /aws-cli-bin
+    ./aws/install --bin-dir /aws-cli-bin && \
+    rm -Rf /usr/local/aws-cli/v2/*/dist/aws_completer \
+    /usr/local/aws-cli/v2/*/dist/awscli/data/ac.index \
+    /usr/local/aws-cli/v2/*/dist/awscli/examples
 
 # ========================================================================================================================
 FROM alpine:3.14
@@ -87,6 +90,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0"
 
+# Install python & PGP
 RUN apk add --no-cache python3 py3-pip krb5 tzdata gnupg=${GNUPG_VERSION}
 
 # Install azure-cli
