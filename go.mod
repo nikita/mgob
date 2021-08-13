@@ -3,7 +3,6 @@ module github.com/nikita/mgob
 go 1.16
 
 require (
-	github.com/boltdb/bolt v1.3.1
 	github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe
 	github.com/dustin/go-humanize v1.0.0
 	github.com/go-chi/chi v1.5.4
@@ -14,6 +13,7 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli/v2 v2.3.0
+	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	gopkg.in/yaml.v2 v2.4.0
 )
