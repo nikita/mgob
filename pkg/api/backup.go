@@ -11,9 +11,9 @@ import (
 	"github.com/go-chi/render"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/stefanprodan/mgob/pkg/backup"
-	"github.com/stefanprodan/mgob/pkg/config"
-	"github.com/stefanprodan/mgob/pkg/notifier"
+	"github.com/nikita/mgob/pkg/backup"
+	"github.com/nikita/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/notifier"
 )
 
 func configCtx(data config.AppConfig) func(next http.Handler) http.Handler {

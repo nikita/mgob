@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/stefanprodan/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/config"
 )
 
 type slackPayload struct {

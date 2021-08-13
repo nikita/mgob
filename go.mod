@@ -1,4 +1,4 @@
-module github.com/stefanprodan/mgob
+module github.com/nikita/mgob
 
 go 1.16
 

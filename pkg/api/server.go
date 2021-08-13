@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/stefanprodan/mgob/pkg/config"
-	"github.com/stefanprodan/mgob/pkg/db"
+	"github.com/nikita/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/db"
 )
 
 type HttpServer struct {

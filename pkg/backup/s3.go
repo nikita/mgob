@@ -2,15 +2,15 @@ package backup
 
 import (
 	"fmt"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
-	"net/url"
 
 	"github.com/codeskyblue/go-sh"
 	"github.com/pkg/errors"
 
-	"github.com/stefanprodan/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/config"
 )
 
 func s3Upload(file string, plan config.Plan, useAwsCli bool) (string, error) {

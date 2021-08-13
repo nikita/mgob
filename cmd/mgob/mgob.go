@@ -9,11 +9,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
-	"github.com/stefanprodan/mgob/pkg/api"
-	"github.com/stefanprodan/mgob/pkg/backup"
-	"github.com/stefanprodan/mgob/pkg/config"
-	"github.com/stefanprodan/mgob/pkg/db"
-	"github.com/stefanprodan/mgob/pkg/scheduler"
+	"github.com/nikita/mgob/pkg/api"
+	"github.com/nikita/mgob/pkg/backup"
+	"github.com/nikita/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/db"
+	"github.com/nikita/mgob/pkg/scheduler"
 )
 
 var (

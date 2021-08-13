@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 
-	"github.com/stefanprodan/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/config"
 )
 
 func sftpUpload(file string, plan config.Plan) (string, error) {

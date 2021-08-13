@@ -1,40 +1,40 @@
 # mgob
 
-[![Build Status](https://travis-ci.org/stefanprodan/mgob.svg?branch=master)](https://travis-ci.org/stefanprodan/mgob)
-[![Docker Pulls](https://img.shields.io/docker/pulls/stefanprodan/mgob)](https://hub.docker.com/r/stefanprodan/mgob/)
+[![Build Status](https://travis-ci.org/nikita/mgob.svg?branch=master)](https://travis-ci.org/nikita/mgob)
+[![Docker Pulls](https://img.shields.io/docker/pulls/nikitalol/mgob)](https://hub.docker.com/r/nikitalol/mgob/)
 
 MGOB is a MongoDB backup automation tool built with Go.
 
 #### Features
 
-* schedule backups
-* local backups retention
-* upload to S3 Object Storage (Minio, AWS, Google Cloud, Azure)
-* upload to gcloud storage
-* upload to SFTP
-* upload to any [Rclone](https://rclone.org/) supported storage
-* notifications (Email, Slack)
-* instrumentation with Prometheus
-* http file server for local backups and logs
-* distributed as an Alpine Docker image
+- schedule backups
+- local backups retention
+- upload to S3 Object Storage (Minio, AWS, Google Cloud, Azure)
+- upload to gcloud storage
+- upload to SFTP
+- upload to any [Rclone](https://rclone.org/) supported storage
+- notifications (Email, Slack)
+- instrumentation with Prometheus
+- http file server for local backups and logs
+- distributed as an Alpine Docker image
 
 #### Install
 
-MGOB is available on Docker Hub at [stefanprodan/mgob](https://hub.docker.com/r/stefanprodan/mgob/).
+MGOB is available on Docker Hub at [nikitalol/mgob](https://hub.docker.com/r/nikitalol/mgob/).
 
 Supported tags:
 
-* `stefanprodan/mgob:latest` latest stable [release](https://github.com/stefanprodan/mgob/releases)
-* `stefanprodan/mgob:edge` master branch latest successful [build](https://travis-ci.org/stefanprodan/mgob)
+- `nikitalol/mgob:latest` latest stable [release](https://github.com/nikita/mgob/releases)
+- `nikitalol/mgob:edge` master branch latest successful [build](https://travis-ci.org/nikita/mgob)
 
 Compatibility matrix:
 
- MGOB| MongoDB
------|--------
-`stefanprodan/mgob:0.9` | 3.4
-`stefanprodan/mgob:0.10` | 3.6
-`stefanprodan/mgob:1.0` | 4.0
-`stefanprodan/mgob:1.1` | 4.2
+| MGOB                  | MongoDB |
+| --------------------- | ------- |
+| `nikitalol/mgob:0.9`  | 3.4     |
+| `nikitalol/mgob:0.10` | 3.6     |
+| `nikitalol/mgob:1.0`  | 4.0     |
+| `nikitalol/mgob:1.1`  | 4.2     |
 
 Docker:
 
@@ -44,13 +44,13 @@ docker run -dp 8090:8090 --name mgob \
     -v "/mgob/storage:/storage" \
     -v "/mgob/tmp:/tmp" \
     -v "/mgob/data:/data" \
-    stefanprodan/mgob \
+    nikitalol/mgob \
     -LogLevel=info
 ```
 
 Kubernetes:
 
-A step by step guide on running MGOB as a StatefulSet with PersistentVolumeClaims can be found [here](https://github.com/stefanprodan/mgob/tree/master/k8s).
+A step by step guide on running MGOB as a StatefulSet with PersistentVolumeClaims can be found [here](https://github.com/nikita/mgob/tree/master/k8s).
 
 #### Configure
 
@@ -90,7 +90,7 @@ encryption:
     keyServer: hkps://keys.openpgp.org
     # optional list of recipients, they will be looked up on key server
     recipients:
-    - example@example.com
+      - example@example.com
 # S3 upload (optional)
 s3:
   url: "https://play.minio.io:9000"
@@ -99,12 +99,12 @@ s3:
   accessKey: "Q3AM3UQ867SPQQA43P2F"
   secretKey: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
   # Optional, only used for AWS (when awscli is present)
-  # The customer-managed AWS Key Management  Service (KMS) key ID that should be used to 
+  # The customer-managed AWS Key Management  Service (KMS) key ID that should be used to
   # server-side encrypt the backup in S3
   #kmsKeyId:
   # Optional, only used for AWS (when awscli is present)
   # Valid choices are: STANDARD | REDUCED_REDUNDANCY | STANDARD_IA  |  ONE-
-  #     ZONE_IA  |  INTELLIGENT_TIERING  |  GLACIER | DEEP_ARCHIVE. 
+  #     ZONE_IA  |  INTELLIGENT_TIERING  |  GLACIER | DEEP_ARCHIVE.
   # Defaults to 'STANDARD'
   #storageClass: STANDARD
   # For Minio and AWS use S3v4 for GCP use S3v2
@@ -176,15 +176,15 @@ target:
 
 #### Web API
 
-* `mgob-host:8090/storage` file server
-* `mgob-host:8090/status` backup jobs status
-* `mgob-host:8090/metrics` Prometheus endpoint
-* `mgob-host:8090/version` mgob version and runtime info
-* `mgob-host:8090/debug` pprof endpoint
+- `mgob-host:8090/storage` file server
+- `mgob-host:8090/status` backup jobs status
+- `mgob-host:8090/metrics` Prometheus endpoint
+- `mgob-host:8090/version` mgob version and runtime info
+- `mgob-host:8090/debug` pprof endpoint
 
 On demand backup:
 
-* HTTP POST `mgob-host:8090/backup/:planID`
+- HTTP POST `mgob-host:8090/backup/:planID`
 
 ```bash
 curl -X POST http://mgob-host:8090/backup/mongo-debug
@@ -202,8 +202,8 @@ curl -X POST http://mgob-host:8090/backup/mongo-debug
 
 Scheduler status:
 
-* HTTP GET `mgob-host:8090/status`
-* HTTP GET `mgob-host:8090/status/:planID`
+- HTTP GET `mgob-host:8090/status`
+- HTTP GET `mgob-host:8090/status/:planID`
 
 ```bash
 curl -X GET http://mgob-host:8090/status/mongo-debug

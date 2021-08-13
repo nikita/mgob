@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/stefanprodan/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/config"
 )
 
 func dump(plan config.Plan, tmpPath string, ts time.Time) (string, string, error) {

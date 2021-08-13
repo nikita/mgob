@@ -5,7 +5,7 @@
 # attempting to apply the chart to your cluster.
 replicaCount: 1
 image:
-  repository: stefanprodan/mgob
+  repository: nikita/mgob
   pullPolicy: IfNotPresent
   tag: 1.1
 service:

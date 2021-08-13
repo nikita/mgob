@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/stefanprodan/mgob/pkg/config"
+	"github.com/nikita/mgob/pkg/config"
 )
 
 func sendEmailNotification(subject string, body string, config *config.SMTP) error {

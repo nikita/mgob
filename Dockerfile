@@ -57,15 +57,15 @@ RUN unzip dist/awscli-exe.zip && \
     ./aws/install --bin-dir /aws-cli-bin
 
 # Build mgob
-COPY . /go/src/github.com/stefanprodan/mgob
+COPY . /go/src/github.com/nikita/mgob
 
-WORKDIR /go/src/github.com/stefanprodan/mgob
+WORKDIR /go/src/github.com/nikita/mgob
 
 RUN CGO_ENABLED=0 GOOS=linux \
   go build \
   -ldflags "-X main.version=$VERSION" \
   -a -installsuffix cgo \
-  -o mgob github.com/stefanprodan/mgob/cmd/mgob
+  -o mgob github.com/nikita/mgob/cmd/mgob
 
 WORKDIR /go
 
@@ -121,7 +121,7 @@ RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cl
 
 WORKDIR /root/
 
-COPY --from=installer /go/src/github.com/stefanprodan/mgob/mgob .
+COPY --from=installer /go/src/github.com/nikita/mgob/mgob .
 COPY --from=installer /go/mongo-tools/bin/* /usr/bin
 
 COPY --from=installer /usr/local/aws-cli/ /usr/local/aws-cli/
