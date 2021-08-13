@@ -1,5 +1,5 @@
-sudo: required
 language: go
+dist: focal
 
 go:
   - 1.16.x

@@ -122,7 +122,7 @@ RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cl
 WORKDIR /root/
 
 COPY --from=installer /go/src/github.com/nikita/mgob/mgob .
-COPY --from=installer /go/mongo-tools/bin/* /usr/bin
+COPY --from=installer /go/mongo-tools/bin/* /usr/bin/
 
 COPY --from=installer /usr/local/aws-cli/ /usr/local/aws-cli/
 COPY --from=installer /aws-cli-bin/ /usr/local/bin/
