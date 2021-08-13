@@ -11,15 +11,16 @@ RUN apk add --no-cache \
     gcc \
     git \
     libc-dev \
+    musl-dev \
+    zlib-dev \
     libffi-dev \
+    krb5-dev && \
     openssl-dev \
     python3 \
     python3-dev \
     py3-pip \
-    zlib-dev \
-    krb5-dev && \
     ln -sf python3 /usr/bin/python && \
-    pip install --no-cache-dir --upgrade pip wheel
+    pip install --no-cache-dir --upgrade pip wheel pycrypto
 
 
 # Move out of go dir
