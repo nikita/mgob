@@ -78,6 +78,8 @@ ARG VERSION
 ENV GNUPG_VERSION 2.2.27-r0
 ENV AZURE_CLI_VERSION 2.27.1
 ENV GOOGLE_CLOUD_SDK_VERSION 352.0.0
+# Issues with s3 region in non EC2 instance with this on
+ENV AWS_EC2_METADATA_DISABLED true
 ENV PATH /google-cloud-sdk/bin:$PATH
 
 LABEL org.label-schema.build-date=$BUILD_DATE \

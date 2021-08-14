@@ -29,12 +29,9 @@ Supported tags:
 
 Compatibility matrix:
 
-| MGOB                  | MongoDB |
-| --------------------- | ------- |
-| `nikitalol/mgob:0.9`  | 3.4     |
-| `nikitalol/mgob:0.10` | 3.6     |
-| `nikitalol/mgob:1.0`  | 4.0     |
-| `nikitalol/mgob:1.1`  | 4.2     |
+| MGOB                 | MongoDB   |
+| -------------------- | --------- |
+| `nikitalol/mgob:1.4` | 4.0 - 5.0 |
 
 Docker:
 
