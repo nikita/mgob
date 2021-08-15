@@ -26,14 +26,14 @@ func Run(plan config.Plan, conf *config.AppConfig) (Result, error) {
 		"planDir": planDir,
 		"err":     err,
 	}).Info("new dump")
-
+	
 	res := Result{
 		Plan:      plan.Name,
 		Timestamp: t1.UTC(),
 		Status:    500,
 	}
 	_, res.Name = filepath.Split(archive)
-
+	
 	if err != nil {
 		return res, err
 	}
@@ -63,15 +63,22 @@ func Run(plan config.Plan, conf *config.AppConfig) (Result, error) {
 			return res, errors.Wrapf(err, "moving file from %v to %v failed", mlog, planDir)
 		}
 	}
+	
+	file := filepath.Join(planDir, res.Name)
 
 	if plan.Scheduler.Retention > 0 {
 		err = applyRetention(planDir, plan.Scheduler.Retention)
 		if err != nil {
 			return res, errors.Wrap(err, "retention job failed")
 		}
+	} else if plan.Scheduler.Retention == 0 {
+		defer func() {
+			err = os.RemoveAll(planDir)
+			if err != nil {
+				log.WithField("err", err).Infof(("error removing local backup folder"))
+			}
+		}()
 	}
-
-	file := filepath.Join(planDir, res.Name)
 
 	if plan.Encryption != nil {
 		encryptedFile := fmt.Sprintf("%v.encrypted", file)
